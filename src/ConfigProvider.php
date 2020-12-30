@@ -17,7 +17,9 @@ class ConfigProvider
         defined('BASE_PATH') or define('BASE_PATH', '');
 
         return [
-            'dependencies' => [],
+            'dependencies' => [
+                ListenerManagerFactory::class => ListenerManagerFactory::class,
+            ],
             'annotations' => [
                 'scan' => [
                     'paths' => [

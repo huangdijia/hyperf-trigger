@@ -16,6 +16,7 @@ use Huangdijia\Trigger\ListenerManager;
 use Huangdijia\Trigger\ListenerManagerFactory;
 use Huangdijia\Trigger\Subscriber\EventSubscriber;
 use Hyperf\Contract\ConfigInterface;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\Process\AbstractProcess;
@@ -33,42 +34,50 @@ class ConsumeProcess extends AbstractProcess
     protected $connection = 'default';
 
     /**
+     * @var ListenerManager
+     */
+    protected $listenerManager;
+
+    /**
      * @Inject
      * @var ListenerManagerFactory
      */
     protected $listenerManagerFactory;
 
     /**
-     * @var ListenerManager
-     */
-    protected $listenerManager;
-
-    /**
      * @var array
      */
     protected $config;
+
+    /**
+     * @Inject
+     * @var StdoutLoggerInterface
+     */
+    protected $logger;
 
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
 
-        $configKey = 'trigger' . $this->connection;
+        $key = 'trigger.' . $this->connection;
 
         /** @var ConfigInterface $config */
         $config = $container->get(ConfigInterface::class);
 
-        if ($config->has($configKey)) {
-            throw new RuntimeException($configKey . ' is undefined.');
+        if (! $config->has($key)) {
+            throw new RuntimeException('config ' . $key . ' is undefined.');
         }
 
-        $this->config = $config->get($configKey);
+        $this->listenerManager = $this->listenerManagerFactory->create($this->connection);
+        $this->config = $config->get($key);
         $this->name = "trigger.{$this->connection}";
         $this->nums = $this->config['processes'] ?? 1;
-        $this->listenerManager = $this->listenerManagerFactory->create($this->connection);
     }
 
     public function handle(): void
     {
+        // $this->logger->info(json_encode($this->config, JSON_PRETTY_PRINT));
+
         $this->registerListeners();
 
         $binLogStream = new MySQLReplicationFactory(
@@ -84,7 +93,7 @@ class ConsumeProcess extends AbstractProcess
                 ->build()
         );
 
-        $binLogStream->registerSubscriber(new EventSubscriber($this->listenerManager, $this->config));
+        $binLogStream->registerSubscriber(new EventSubscriber($this->listenerManager, $this->config, $this->logger));
 
         $binLogStream->run();
     }
@@ -115,18 +124,22 @@ class ConsumeProcess extends AbstractProcess
 
         foreach ($listeners as $class => $properties) {
             if (! in_array(ListenerInterface::class, class_implements($class))) {
+                $this->logger->warning(sprintf('%s is not implemented by %s.', $class, ListenerInterface::class));
                 continue;
             }
 
-            if ($properties['connection'] != $this->connection) {
+            if ($properties->connection != $this->connection) {
                 continue;
             }
 
-            if (count($properties['listen']) == 0) {
+            if (count($properties->listen) == 0) {
+                $this->logger->warning(sprintf('%s\'s listen is empty.', $class, ListenerInterface::class));
                 continue;
             }
 
-            $this->listenerManager->register($properties['listen'], new $class());
+            $this->listenerManager->register($properties->listen, $class);
+
+            $this->logger->info(sprintf('[trigger.%s] %s registered.', $this->connection, $class), $properties->listen);
         }
     }
 

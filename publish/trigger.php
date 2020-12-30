@@ -16,7 +16,7 @@ return [
         'password' => env('TRIGGER_PASSWORD', ''),
         'databases_only' => env('TRIGGER_DATABASES_ONLY', '') ? explode(',', env('TRIGGER_DATABASES_ONLY')) : [],
         'tables_only' => env('TRIGGER_TABLES_ONLY', '') ? explode(',', env('TRIGGER_TABLES_ONLY')) : [],
-        'heartbeat' => (int) env('TRIGGER_HEARTBEAT', 3),
+        'heartbeat_period' => (int) env('TRIGGER_HEARTBEAT', 3),
 
         'processes' => 1,
         'concurrent' => [
