@@ -34,7 +34,7 @@ class HeartbeatSubscriber extends AbstractEventSubscriber
 
     public function onHeartbeat(HeartbeatDTO $event): void
     {
-        $this->logger->info($event->__toString());
+        // $this->logger->info($event->__toString());
 
         $this->cache->set(self::CACHE_KEY_PREFIX . $this->connection, $event->getEventInfo()->getBinLogCurrent(), self::CACHE_TTL);
     }
