@@ -18,7 +18,8 @@ class ConfigProvider
 
         return [
             'dependencies' => [
-                ListenerManagerFactory::class => ListenerManagerFactory::class,
+                TriggerManagerFactory::class => TriggerManagerFactory::class,
+                SubscriberManagerFactory::class => SubscriberManagerFactory::class,
             ],
             'annotations' => [
                 'scan' => [

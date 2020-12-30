@@ -12,25 +12,25 @@ namespace Huangdijia\Trigger;
 
 use Hyperf\Utils\Str;
 
-class ListenerManager
+class TriggerManager
 {
     /**
      * @var array
      */
-    protected $listeners;
+    protected $triggers;
 
     /**
      * @param string|string[] $event
-     * @param string $listener
+     * @param string $trigger
      */
-    public function register($event, $listener)
+    public function register($event, $trigger)
     {
         foreach ((array) $event as $e) {
-            if (! isset($this->listeners[$e])) {
-                $this->listeners[$e] = [];
+            if (! isset($this->triggers[$e])) {
+                $this->triggers[$e] = [];
             }
 
-            $this->listeners[$e][] = $listener;
+            $this->triggers[$e][] = $trigger;
         }
     }
 
@@ -39,19 +39,18 @@ class ListenerManager
      */
     public function get(string $eventType)
     {
-        $listeners = [];
+        $triggers = [];
 
-        foreach ((array) $this->listeners as $event => $listener) {
-            /* @var array $listeners */
+        foreach ((array) $this->triggers as $event => $trigger) {
             if (Str::is($event, $eventType)) {
-                if (! isset($listeners[$event])) {
-                    $listeners[$event] = [];
+                if (! isset($triggers[$event])) {
+                    $triggers[$event] = [];
                 }
 
-                $listeners[$event] = array_merge($listeners[$event], $listener);
+                $triggers[$event] = array_merge($triggers[$event], $trigger);
             }
         }
 
-        return $listeners;
+        return $triggers;
     }
 }

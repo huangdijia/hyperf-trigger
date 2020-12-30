@@ -10,20 +10,20 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
-class ListenerManagerFactory
+class TriggerManagerFactory
 {
     /**
-     * @var ListenerManager[]
+     * @var TriggerManager[]
      */
     protected $managers = [];
 
     /**
-     * @return ListenerManager
+     * @return TriggerManager
      */
     public function create(string $connection = 'default')
     {
         if (! isset($this->managers[$connection])) {
-            $this->managers[$connection] = new ListenerManager();
+            $this->managers[$connection] = new TriggerManager();
         }
 
         return $this->managers[$connection];

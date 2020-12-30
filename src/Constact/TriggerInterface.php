@@ -10,9 +10,11 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger\Constact;
 
-use MySQLReplication\Event\DTO\EventDTO;
-
-interface ListenerInterface
+interface TriggerInterface
 {
-    public function process(EventDTO $event);
+    public function onWrite(array $new);
+
+    public function onUpdate(array $old, array $new);
+
+    public function onDelete(array $old);
 }

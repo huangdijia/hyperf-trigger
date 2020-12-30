@@ -20,30 +20,69 @@ composer require huangdijia/hyperf-trigger
 php bin/hyperf.php vendor:publish huangdijia/hyperf-trigger
 ```
 
-## Listener
+## Costom Trigger
 
 ```php
-namespace App\Listener;
+namespace App\Trigger;
 
 use Huangdijia\Trigger\Annotation\Trigger;
-use Huangdijia\Trigger\Constact\ListenerInterface;
-use Hyperf\Di\Annotation\Inject;
+use Huangdijia\Trigger\Trigger\AbstractTrigger;
 use MySQLReplication\Event\DTO\EventDTO;
 
 /**
- * event: write,update,delete
- * @Trigger(listen="some_table.event")
+ * @Trigger(listen="some_table.write", connection="default")
  */
-class SomeTableListener implements ListenerInterface
+class SomeTableListener extends AbstractTrigger
 {
-    public function process(EventDTO $event)
+    public function onWrite(array $new)
     {
-        var_dump($event->__toString());
+        var_dump($new);
+    }
+
+    public function onUpdate(array $old, array $new)
+    {
+        var_dump($old, $new);
+    }
+
+    public function onDelete(array $old)
+    {
+        var_dump($old);
+    }
+}
+```
+
+- Listen Multi Events
+
+```php
+/**
+ * @Trigger(listen={"some_table.write", "some_table.update"}, connection="default")
+ */
+```
+
+## Costom Subscriber
+
+```php
+namespace App\Subscriber;
+
+use Huangdijia\Trigger\Annotation\Subscriber;
+use Huangdijia\Trigger\Subscriber\AbstractEventSubscriber;
+use MySQLReplication\Event\DTO\EventDTO;
+
+/**
+ * @Subscriber(connectin="default")
+ */
+class DemoSubscriber extends AbstractEventSubscriber
+{
+    protected function allEvents(EventDTO $event): void
+    {
+        // some code
     }
 }
 ```
 
 ## Setup Process
+
+- default
 
 ```php
 namespace App\Process;
@@ -58,3 +97,19 @@ class TriggerProcess extends ConsumeProcess
 {
 }
 ```
+
+- Custom connection
+
+```php
+namespace App\Process;
+
+use Huangdijia\Trigger\Process\ConsumeProcess;
+use Hyperf\Process\Annotation\Process;
+
+/**
+ * @Process
+ */
+class CustomProcess extends ConsumeProcess
+{
+    protected $connection = 'custom_connection';
+}

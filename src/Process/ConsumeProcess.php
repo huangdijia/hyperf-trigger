@@ -10,12 +10,9 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger\Process;
 
-use Huangdijia\Trigger\Annotation\Trigger;
-use Huangdijia\Trigger\Constact\ListenerInterface;
-use Huangdijia\Trigger\ListenerManager;
-use Huangdijia\Trigger\ListenerManagerFactory;
-use Huangdijia\Trigger\Subscriber\EventSubscriber;
+use Huangdijia\Trigger\Annotation\Subscriber;
 use Huangdijia\Trigger\Subscriber\HeartbeatSubscriber;
+use Huangdijia\Trigger\Subscriber\TriggerSubscriber;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
@@ -47,17 +44,6 @@ class ConsumeProcess extends AbstractProcess
     protected $cache;
 
     /**
-     * @var ListenerManager
-     */
-    protected $listenerManager;
-
-    /**
-     * @Inject
-     * @var ListenerManagerFactory
-     */
-    protected $listenerManagerFactory;
-
-    /**
      * @var ContainerInterface
      */
     protected $container;
@@ -82,7 +68,6 @@ class ConsumeProcess extends AbstractProcess
         }
 
         $this->cache = $container->get(CacheInterface::class);
-        $this->listenerManager = $this->listenerManagerFactory->create($this->connection);
         $this->config = $config->get($key);
         $this->name = "trigger.{$this->connection}";
         $this->nums = $this->config['processes'] ?? 1;
@@ -91,8 +76,6 @@ class ConsumeProcess extends AbstractProcess
     public function handle(): void
     {
         // $this->logger->info(json_encode($this->config, JSON_PRETTY_PRINT));
-
-        $this->registerListeners();
 
         $configBuilder = new ConfigBuilder();
         $configBuilder->withUser($this->config['user'] ?? 'root')
@@ -112,8 +95,16 @@ class ConsumeProcess extends AbstractProcess
 
         $binLogStream = new MySQLReplicationFactory($configBuilder->build());
 
-        $binLogStream->registerSubscriber(new EventSubscriber($this->container, $this->connection));
-        $binLogStream->registerSubscriber(new HeartbeatSubscriber($this->container, $this->connection));
+        $subscribers = $this->getAnnotationSubscribers() + [
+            HeartbeatSubscriber::class,
+            TriggerSubscriber::class,
+        ];
+
+        foreach ($subscribers as $subscriber) {
+            $binLogStream->registerSubscriber(new $subscriber($this->container, $this->connection));
+
+            $this->logger->info(sprintf('[trigger.%s] %s registered.', $this->connection, $subscriber));
+        }
 
         $binLogStream->run();
     }
@@ -145,47 +136,33 @@ class ConsumeProcess extends AbstractProcess
             return $ip;
         }
 
-        throw new \RuntimeException('Can not get the internal IP.');
-    }
-
-    private function registerListeners()
-    {
-        $listeners = $this->getAnnotationListeners();
-
-        foreach ($listeners as $class => $properties) {
-            if (! in_array(ListenerInterface::class, class_implements($class))) {
-                $this->logger->warning(sprintf('%s is not implemented by %s.', $class, ListenerInterface::class));
-                continue;
-            }
-
-            if ($properties->connection != $this->connection) {
-                continue;
-            }
-
-            if (count($properties->listen) == 0) {
-                $this->logger->warning(sprintf('%s\'s listen is empty.', $class, ListenerInterface::class));
-                continue;
-            }
-
-            $this->listenerManager->register($properties->listen, $class);
-
-            $this->logger->info(sprintf('[trigger.%s] %s registered.', $this->connection, $class), $properties->listen);
-        }
+        throw new RuntimeException('Can not get the internal IP.');
     }
 
     /**
      * @return array
      */
-    private function getAnnotationListeners()
+    protected function getAnnotationSubscribers()
     {
-        return AnnotationCollector::getClassesByAnnotation(Trigger::class);
+        $subscribers = [];
+
+        $annotationSubscribers = AnnotationCollector::getClassesByAnnotation(Subscriber::class);
+
+        foreach ($annotationSubscribers as $subscriber => $property) {
+            if ($property->connection != $this->connection) {
+                continue;
+            }
+            $subscribers[] = $subscriber;
+        }
+
+        return $subscribers;
     }
 
     /**
      * @throws RuntimeException
      * @return int
      */
-    private function getSlaveId()
+    protected function getSlaveId()
     {
         return (int) ip2long($this->getInternalIp());
     }

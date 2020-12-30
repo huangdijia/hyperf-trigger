@@ -15,7 +15,7 @@ use Hyperf\Contract\StdoutLoggerInterface;
 use MySQLReplication\Event\EventSubscribers;
 use Psr\Container\ContainerInterface;
 
-abstract class AbstractEventSubscriber extends EventSubscribers
+abstract class AbstractSubscriber extends EventSubscribers
 {
     /**
      * @var ContainerInterface
@@ -41,7 +41,7 @@ abstract class AbstractEventSubscriber extends EventSubscribers
     {
         $this->container = $container;
         $this->connection = $connection;
-        $this->logger = $container->get(StdoutLoggerInterface::class);
         $this->config = $container->get(ConfigInterface::class)->get('trigger.' . $connection) ?? [];
+        $this->logger = $container->get(StdoutLoggerInterface::class);
     }
 }

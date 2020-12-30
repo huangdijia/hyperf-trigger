@@ -10,11 +10,12 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger\Subscriber;
 
+use MySQLReplication\Definitions\ConstEventsNames;
 use MySQLReplication\Event\DTO\HeartbeatDTO;
 use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 
-class HeartbeatSubscriber extends AbstractEventSubscriber
+class HeartbeatSubscriber extends AbstractSubscriber
 {
     const CACHE_KEY_PREFIX = 'trigger_heartbeat_latest_binlog:';
 
@@ -32,10 +33,15 @@ class HeartbeatSubscriber extends AbstractEventSubscriber
         $this->cache = $container->get(CacheInterface::class);
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            ConstEventsNames::HEARTBEAT => 'onHeartbeat',
+        ];
+    }
+
     public function onHeartbeat(HeartbeatDTO $event): void
     {
-        // $this->logger->info($event->__toString());
-
         $this->cache->set(self::CACHE_KEY_PREFIX . $this->connection, $event->getEventInfo()->getBinLogCurrent(), self::CACHE_TTL);
     }
 }
