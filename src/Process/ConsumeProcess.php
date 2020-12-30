@@ -60,7 +60,7 @@ class ConsumeProcess extends AbstractProcess
 
         $config = $this->config->get($configKey);
 
-        $this->registerListers($listenerManager);
+        $this->registerListeners($listenerManager);
 
         $binLogStream = new MySQLReplicationFactory(
             (new ConfigBuilder())
@@ -80,6 +80,9 @@ class ConsumeProcess extends AbstractProcess
         $binLogStream->run();
     }
 
+    /**
+     * @throws RuntimeException
+     */
     protected function getInternalIp(): string
     {
         $ips = swoole_get_local_ip();
@@ -97,7 +100,7 @@ class ConsumeProcess extends AbstractProcess
         throw new \RuntimeException('Can not get the internal IP.');
     }
 
-    private function registerListers(ListenerManager $listenerManager)
+    private function registerListeners(ListenerManager $listenerManager)
     {
         $listeners = $this->getAnnotationListeners();
 
@@ -126,6 +129,10 @@ class ConsumeProcess extends AbstractProcess
         return AnnotationCollector::getClassesByAnnotation(Trigger::class);
     }
 
+    /**
+     * @throws RuntimeException
+     * @return int
+     */
     private function getSlaveId()
     {
         return (int) ip2long($this->getInternalIp());
