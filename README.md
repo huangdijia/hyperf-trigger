@@ -4,7 +4,7 @@
 [![Total Downloads](https://poser.pugx.org/huangdijia/hyperf-trigger/d/total.png)](https://packagist.org/packages/huangdijia/hyperf-trigger)
 [![GitHub license](https://img.shields.io/github/license/huangdijia/hyperf-trigger)](https://github.com/huangdijia/hyperf-trigger)
 
-A service-governance component for hyperf
+MySQL trigger component for hyperf
 
 ## Installation
 
