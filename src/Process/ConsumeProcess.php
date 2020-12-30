@@ -15,14 +15,17 @@ use Huangdijia\Trigger\Constact\ListenerInterface;
 use Huangdijia\Trigger\ListenerManager;
 use Huangdijia\Trigger\ListenerManagerFactory;
 use Huangdijia\Trigger\Subscriber\EventSubscriber;
+use Huangdijia\Trigger\Subscriber\HeartbeatSubscriber;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\Process\AbstractProcess;
+use MySQLReplication\BinLog\BinLogCurrent;
 use MySQLReplication\Config\ConfigBuilder;
 use MySQLReplication\MySQLReplicationFactory;
 use Psr\Container\ContainerInterface;
+use Psr\SimpleCache\CacheInterface;
 use RuntimeException;
 
 class ConsumeProcess extends AbstractProcess
@@ -32,6 +35,16 @@ class ConsumeProcess extends AbstractProcess
      * @var string
      */
     protected $connection = 'default';
+
+    /**
+     * @var array
+     */
+    protected $config;
+
+    /**
+     * @var CacheInterface
+     */
+    protected $cache;
 
     /**
      * @var ListenerManager
@@ -45,9 +58,9 @@ class ConsumeProcess extends AbstractProcess
     protected $listenerManagerFactory;
 
     /**
-     * @var array
+     * @var ContainerInterface
      */
-    protected $config;
+    protected $container;
 
     /**
      * @Inject
@@ -68,6 +81,7 @@ class ConsumeProcess extends AbstractProcess
             throw new RuntimeException('config ' . $key . ' is undefined.');
         }
 
+        $this->cache = $container->get(CacheInterface::class);
         $this->listenerManager = $this->listenerManagerFactory->create($this->connection);
         $this->config = $config->get($key);
         $this->name = "trigger.{$this->connection}";
@@ -80,22 +94,38 @@ class ConsumeProcess extends AbstractProcess
 
         $this->registerListeners();
 
-        $binLogStream = new MySQLReplicationFactory(
-            (new ConfigBuilder())
-                ->withUser($this->config['user'] ?? 'root')
-                ->withHost($this->config['host'] ?? '127.0.0.1')
-                ->withPassword($this->config['password'] ?? 'root')
-                ->withPort((int) $this->config['port'] ?? 3306)
-                ->withSlaveId($this->getSlaveId())
-                ->withHeartbeatPeriod((float) $this->config['heartbeat_period'] ?? 2)
-                ->withDatabasesOnly((array) $this->config['databases_only'] ?? [])
-                ->withtablesOnly((array) $this->config['tables_only'] ?? [])
-                ->build()
-        );
+        $configBuilder = new ConfigBuilder();
+        $configBuilder->withUser($this->config['user'] ?? 'root')
+            ->withHost($this->config['host'] ?? '127.0.0.1')
+            ->withPassword($this->config['password'] ?? 'root')
+            ->withPort((int) $this->config['port'] ?? 3306)
+            ->withSlaveId($this->getSlaveId())
+            ->withHeartbeatPeriod((float) $this->config['heartbeat_period'] ?? 3)
+            ->withDatabasesOnly((array) $this->config['databases_only'] ?? [])
+            ->withtablesOnly((array) $this->config['tables_only'] ?? []);
 
-        $binLogStream->registerSubscriber(new EventSubscriber($this->listenerManager, $this->config, $this->logger));
+        if ($binlog = $this->getLatestBinlog()) {
+            $configBuilder->withBinLogFileName($binlog->getBinFileName())
+                ->withBinLogPosition($binlog->getBinLogPosition());
+            $this->logger->info(json_encode($this->config + ['binlog_filename' => $binlog->getBinFileName(), 'binlog_position' => $binlog->getBinLogPosition()], JSON_PRETTY_PRINT));
+        }
+
+        $binLogStream = new MySQLReplicationFactory($configBuilder->build());
+
+        $binLogStream->registerSubscriber(new EventSubscriber($this->container, $this->connection));
+        $binLogStream->registerSubscriber(new HeartbeatSubscriber($this->container, $this->connection));
 
         $binLogStream->run();
+    }
+
+    /**
+     * @return null|BinLogCurrent
+     */
+    protected function getLatestBinlog()
+    {
+        $key = HeartbeatSubscriber::CACHE_KEY_PREFIX . $this->connection;
+
+        return $this->cache->get($key, null);
     }
 
     /**

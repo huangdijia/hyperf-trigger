@@ -43,7 +43,7 @@ class ListenerManager
     {
         $listeners = [];
 
-        foreach ($this->listeners as $event => $listener) {
+        foreach ((array) $this->listeners as $event => $listener) {
             /* @var array $listeners */
             if (Str::is($event, $eventType)) {
                 if (! isset($listeners[$event])) {

@@ -12,15 +12,15 @@ namespace Huangdijia\Trigger\Subscriber;
 
 use Huangdijia\Trigger\Constact\ListenerInterface;
 use Huangdijia\Trigger\ListenerManager;
-use Hyperf\Contract\StdoutLoggerInterface;
+use Huangdijia\Trigger\ListenerManagerFactory;
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Utils\Coroutine\Concurrent;
 use MySQLReplication\Event\DTO\EventDTO;
 use MySQLReplication\Event\DTO\RowsDTO;
 use MySQLReplication\Event\DTO\TableMapDTO;
-use MySQLReplication\Event\EventSubscribers;
-use Psr\Log\LoggerInterface;
+use Psr\Container\ContainerInterface;
 
-class EventSubscriber extends EventSubscribers
+class EventSubscriber extends AbstractEventSubscriber
 {
     /**
      * @var ListenerManager
@@ -37,16 +37,12 @@ class EventSubscriber extends EventSubscribers
      */
     protected $concurrent;
 
-    /**
-     * @var null|StdoutLoggerInterface
-     */
-    protected $logger;
-
-    public function __construct(ListenerManager $listenerManager, array $config = [], ?LoggerInterface $logger = null)
+    public function __construct(ContainerInterface $container, string $connection = 'default')
     {
-        $this->listenerManager = $listenerManager;
-        $this->config = $config;
-        $this->logger = $logger;
+        parent::__construct($container, $connection);
+
+        $this->listenerManager = $container->get(ListenerManagerFactory::class)->create($this->connection);
+        $this->config = $container->get(ConfigInterface::class)->get('trigger.' . $this->connection);
 
         $concurrentLimit = $config['concurrent']['limit'] ?? null;
 
@@ -57,7 +53,7 @@ class EventSubscriber extends EventSubscribers
 
     protected function allEvents(EventDTO $event): void
     {
-        // $this->logger && $this->logger->info($event->__toString());
+        // $this->logger->info($event->__toString());
 
         $eventType = $event->getType();
 
@@ -66,10 +62,10 @@ class EventSubscriber extends EventSubscribers
             $eventType = sprintf('%s.%s', $table, $eventType);
         }
 
-        // $this->logger && $this->logger->info($eventType . ':' . json_encode($this->listenerManager->get($eventType)));
+        // $this->logger->info($eventType . ':' . json_encode($this->listenerManager->get($eventType)));
 
         $registered = $this->listenerManager->get($eventType);
-        // $this->logger && $this->logger->info($eventType . ':' . json_encode($registered, JSON_PRETTY_PRINT));
+        // $this->logger->info($eventType . ':' . json_encode($registered, JSON_PRETTY_PRINT));
 
         foreach ($registered as $listeners) {
             foreach ($listeners as $evt => $class) {
