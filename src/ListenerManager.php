@@ -10,7 +10,8 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
-use Huangdijia\Trigger\Constact\ListenerInterface;
+include __DIR__ . '/../vendor/autoload.php';
+
 use Hyperf\Utils\Str;
 
 class ListenerManager
@@ -22,32 +23,37 @@ class ListenerManager
 
     /**
      * @param string|string[] $event
+     * @param string $listener
      */
-    public function register($event, ListenerInterface $listener)
+    public function register($event, $listener)
     {
         foreach ((array) $event as $e) {
-            $this->listeners[$e] = $listener;
+            if (! isset($this->listeners[$e])) {
+                $this->listeners[$e] = [];
+            }
+
+            $this->listeners[$e][] = $listener;
         }
     }
 
     /**
-     * @return ListenerInterface[]
+     * @return array[string[]]
      */
-    public function get(string $pattern)
+    public function get(string $eventType)
     {
         $listeners = [];
 
-        foreach ($this->listeners ?? [] as $event => $listener) {
-            if (Str::is($pattern, $event)) {
-                $listeners[] = $listener;
+        foreach ($this->listeners as $event => $listener) {
+            /* @var array $listeners */
+            if (Str::is($event, $eventType)) {
+                if (! isset($listeners[$event])) {
+                    $listeners[$event] = [];
+                }
+
+                $listeners[$event] = array_merge($listeners[$event], $listener);
             }
         }
 
         return $listeners;
-    }
-
-    public function deregister(string $event)
-    {
-        unset($this->listeners[$event]);
     }
 }

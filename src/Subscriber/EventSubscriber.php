@@ -10,7 +10,9 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger\Subscriber;
 
+use Huangdijia\Trigger\Constact\ListenerInterface;
 use Huangdijia\Trigger\ListenerManager;
+use Hyperf\Utils\Coroutine\Concurrent;
 use MySQLReplication\Event\DTO\EventDTO;
 use MySQLReplication\Event\DTO\RowsDTO;
 use MySQLReplication\Event\DTO\TableMapDTO;
@@ -22,28 +24,50 @@ class EventSubscriber extends AbstractEventSubscriber
      */
     protected $listenerManager;
 
-    public function __construct($listenerManager)
+    /**
+     * @var array
+     */
+    protected $config;
+
+    /**
+     * @var null|Concurrent
+     */
+    protected $concurrent;
+
+    public function __construct(ListenerManager $listenerManager, array $config = [])
     {
         $this->listenerManager = $listenerManager;
+        $this->config = $config;
+
+        $concurrentLimit = $config['concurrent']['limit'] ?? null;
+
+        if ($concurrentLimit && is_numeric($concurrentLimit)) {
+            $this->concurrent = new Concurrent((int) $concurrentLimit);
+        }
     }
 
     protected function allEvents(EventDTO $event): void
     {
-        $events = ['*'];
+        $eventType = $event->getType();
 
         if (($event instanceof RowsDTO) || ($event instanceof TableMapDTO)) {
             $table = $event->getTableMap()->getTable();
-            $events[] = sprintf('%s.*', $table);
-            $events[] = sprintf('%s.%s', $table, $event->getType());
-        } else {
-            $events[] = $event->getType();
+            $eventType = sprintf('%s.%s', $table, $event);
         }
 
-        foreach ($events as $key) {
-            foreach ($this->listenerManager->get($key) as $listener) {
-                co(function () use ($listener, $event) {
+        foreach ($this->listenerManager->get($eventType) as $listeners) {
+            foreach ($listeners as $evt => $class) {
+                /** @var ListenerInterface $listener */
+                $listener = new $class();
+                $callback = function () use ($listener, $event) {
                     return $listener->process($event);
-                });
+                };
+
+                if ($this->concurrent) {
+                    $this->concurrent->create($callback);
+                } else {
+                    parallel([$callback]);
+                }
             }
         }
     }

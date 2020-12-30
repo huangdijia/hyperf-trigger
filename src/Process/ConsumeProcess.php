@@ -21,6 +21,7 @@ use Hyperf\Di\Annotation\Inject;
 use Hyperf\Process\AbstractProcess;
 use MySQLReplication\Config\ConfigBuilder;
 use MySQLReplication\MySQLReplicationFactory;
+use Psr\Container\ContainerInterface;
 use RuntimeException;
 
 class ConsumeProcess extends AbstractProcess
@@ -43,39 +44,47 @@ class ConsumeProcess extends AbstractProcess
     protected $listenerManager;
 
     /**
-     * @Inject
-     * @var ConfigInterface
+     * @var array
      */
     protected $config;
 
-    public function handle(): void
+    public function __construct(ContainerInterface $container)
     {
-        $listenerManager = $this->listenerManagerFactory->create($this->connection);
+        parent::__construct($container);
 
         $configKey = 'trigger' . $this->connection;
 
-        if ($this->config->has($configKey)) {
+        /** @var ConfigInterface $config */
+        $config = $container->get(ConfigInterface::class);
+
+        if ($config->has($configKey)) {
             throw new RuntimeException($configKey . ' is undefined.');
         }
 
-        $config = $this->config->get($configKey);
+        $this->config = $config->get($configKey);
+        $this->name = "trigger.{$this->connection}";
+        $this->nums = $this->config['processes'] ?? 1;
+        $this->listenerManager = $this->listenerManagerFactory->create($this->connection);
+    }
 
-        $this->registerListeners($listenerManager);
+    public function handle(): void
+    {
+        $this->registerListeners();
 
         $binLogStream = new MySQLReplicationFactory(
             (new ConfigBuilder())
-                ->withUser($config['user'] ?? 'root')
-                ->withHost($config['host'] ?? '127.0.0.1')
-                ->withPassword($config['password'] ?? 'root')
-                ->withPort((int) $config['port'] ?? 3306)
+                ->withUser($this->config['user'] ?? 'root')
+                ->withHost($this->config['host'] ?? '127.0.0.1')
+                ->withPassword($this->config['password'] ?? 'root')
+                ->withPort((int) $this->config['port'] ?? 3306)
                 ->withSlaveId($this->getSlaveId())
-                ->withHeartbeatPeriod((float) $config['heartbeat_period'] ?? 2)
-                ->withDatabasesOnly((array) $config['databases_only'] ?? [])
-                ->withtablesOnly((array) $config['tables_only'] ?? [])
+                ->withHeartbeatPeriod((float) $this->config['heartbeat_period'] ?? 2)
+                ->withDatabasesOnly((array) $this->config['databases_only'] ?? [])
+                ->withtablesOnly((array) $this->config['tables_only'] ?? [])
                 ->build()
         );
 
-        $binLogStream->registerSubscriber(new EventSubscriber($listenerManager));
+        $binLogStream->registerSubscriber(new EventSubscriber($this->listenerManager, $this->config));
 
         $binLogStream->run();
     }
@@ -100,7 +109,7 @@ class ConsumeProcess extends AbstractProcess
         throw new \RuntimeException('Can not get the internal IP.');
     }
 
-    private function registerListeners(ListenerManager $listenerManager)
+    private function registerListeners()
     {
         $listeners = $this->getAnnotationListeners();
 
@@ -117,12 +126,12 @@ class ConsumeProcess extends AbstractProcess
                 continue;
             }
 
-            $listenerManager->register($properties['listen'], new $class());
+            $this->listenerManager->register($properties['listen'], new $class());
         }
     }
 
     /**
-     * @return ListenerInterface[]
+     * @return array
      */
     private function getAnnotationListeners()
     {
