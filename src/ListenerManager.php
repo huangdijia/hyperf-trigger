@@ -10,8 +10,6 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
-include __DIR__ . '/../vendor/autoload.php';
-
 use Hyperf\Utils\Str;
 
 class ListenerManager
