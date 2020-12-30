@@ -16,8 +16,9 @@ use Hyperf\Utils\Coroutine\Concurrent;
 use MySQLReplication\Event\DTO\EventDTO;
 use MySQLReplication\Event\DTO\RowsDTO;
 use MySQLReplication\Event\DTO\TableMapDTO;
+use MySQLReplication\Event\EventSubscribers;
 
-class EventSubscriber extends AbstractEventSubscriber
+class EventSubscriber extends EventSubscribers
 {
     /**
      * @var ListenerManager
