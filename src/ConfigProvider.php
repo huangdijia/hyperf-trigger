@@ -32,7 +32,7 @@ class ConfigProvider
                     'id' => 'config',
                     'description' => 'config file.',
                     'source' => __DIR__ . '/../publish/trigger.php',
-                    'destination' => (BASE_PATH) . '/config/autoload/trigger.php',
+                    'destination' => BASE_PATH . '/config/autoload/trigger.php',
                 ],
             ],
         ];
