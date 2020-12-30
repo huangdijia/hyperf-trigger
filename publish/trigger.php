@@ -9,5 +9,13 @@ declare(strict_types=1);
  * @contact  hdj@addcn.com
  */
 return [
-    'default' => [],
+    'default' => [
+        'host' => env('TRIGGER_HOST', ''),
+        'port' => env('TRIGGER_PORT', 3306),
+        'user' => env('TRIGGER_USER', ''),
+        'password' => env('TRIGGER_PASSWORD', ''),
+        'databases_only' => env('TRIGGER_DATABASES_ONLY', '') ? explode(',', env('TRIGGER_DATABASES_ONLY')) : [],
+        'tables_only' => env('TRIGGER_TABLES_ONLY', '') ? explode(',', env('TRIGGER_TABLES_ONLY')) : [],
+        'heartbeat' => (int) env('TRIGGER_HEARTBEAT', 3),
+    ],
 ];
