@@ -32,8 +32,9 @@ class EventSubscriber extends AbstractEventSubscriber
         $events = ['*'];
 
         if (($event instanceof RowsDTO) || ($event instanceof TableMapDTO)) {
-            $events[] = sprintf('%s.*', $event->getTableMap()->getTable());
-            $events[] = sprintf('%s.%s', $event->getTableMap()->getTable(), $event->getType());
+            $table = $event->getTableMap()->getTable();
+            $events[] = sprintf('%s.*', $table);
+            $events[] = sprintf('%s.%s', $table, $event->getType());
         } else {
             $events[] = $event->getType();
         }
