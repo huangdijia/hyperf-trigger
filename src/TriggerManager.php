@@ -43,6 +43,14 @@ class TriggerManager
      */
     public function get(string $table, string $event)
     {
-        return Arr::get($this->triggers, $table . '.' . $event, []);
+        return Arr::get($this->triggers, $this->buildKey($table, $event), []);
+    }
+
+    /**
+     * @return string
+     */
+    protected function buildKey(string $table, string $event)
+    {
+        return sprintf('%s.%s', $table, $event);
     }
 }
