@@ -13,6 +13,7 @@ namespace Huangdijia\Trigger\Listener;
 use Huangdijia\Trigger\Annotation\Trigger;
 use Huangdijia\Trigger\Constact\TriggerInterface;
 use Huangdijia\Trigger\TriggerManagerFactory;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
@@ -40,6 +41,7 @@ class RegisterTriggerListener implements ListenerInterface
             /** @var TriggerManagerFactory $factory */
             $factory = ApplicationContext::getContainer()->get(TriggerManagerFactory::class);
             $triggers = AnnotationCollector::getClassesByAnnotation(Trigger::class);
+            $logger = ApplicationContext::getContainer()->get(StdoutLoggerInterface::class);
 
             foreach ($triggers as $class => $property) {
                 if (! in_array(TriggerInterface::class, class_implements($class))) {
@@ -51,6 +53,8 @@ class RegisterTriggerListener implements ListenerInterface
                 }
 
                 $factory->get($property->replication ?: 'default')->register($property->table, $property->events, $class);
+
+                $logger->info(sprintf('[trigger] %s [replication:%s events:%s] registered by %s listener.', $class, $property->replication, implode(',', $property->events), __CLASS__));
             }
         }
     }

@@ -12,6 +12,7 @@ namespace Huangdijia\Trigger\Listener;
 
 use Huangdijia\Trigger\Annotation\Subscriber;
 use Huangdijia\Trigger\SubscriberManagerFactory;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
@@ -42,9 +43,12 @@ class RegisterSubsciberListener implements ListenerInterface
             /** @var SubscriberManagerFactory $factory */
             $factory = $container->get(SubscriberManagerFactory::class);
             $subscribers = AnnotationCollector::getClassesByAnnotation(Subscriber::class);
+            $logger = ApplicationContext::getContainer()->get(StdoutLoggerInterface::class);
 
             foreach ($subscribers as $class => $property) {
                 $factory->get($property->replication ?: 'default')->register($class);
+
+                $logger->info(sprintf('[trigger] %s [replication:%s] registered by %s listener.', $class, $property->replication, __CLASS__));
             }
         }
     }
