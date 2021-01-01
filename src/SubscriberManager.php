@@ -18,10 +18,9 @@ class SubscriberManager
     protected $subscribers;
 
     /**
-     * @param string $connection
      * @param string $subscriber
      */
-    public function register($connection, $subscriber)
+    public function register(string $connection, $subscriber)
     {
         if (! isset($this->subscribers[$connection])) {
             $this->subscribers[$connection] = [];

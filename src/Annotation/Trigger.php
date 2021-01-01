@@ -26,16 +26,29 @@ class Trigger extends AbstractAnnotation
     /**
      * @var array
      */
-    public $listen = [];
+    public $events = [];
+
+    /**
+     * @var string
+     */
+    public $table;
 
     public function __construct($value = null)
     {
-        if (isset($value['listen'])) {
-            $this->listen = (array) $value['listen'];
+        if (isset($value['on'])) {
+            if (is_string($value['on']) && stripos($value['on'], ',')) {
+                $value['on'] = explode(',', $value['on']);
+            }
+
+            $this->events = (array) $value['on'];
         }
 
         if (isset($value['connection']) && is_string($value['connection'])) {
             $this->connection = $value['connection'];
+        }
+
+        if (isset($value['table']) && is_string($value['table'])) {
+            $this->table = $value['table'];
         }
     }
 }

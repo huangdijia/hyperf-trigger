@@ -10,6 +10,9 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
+use Huangdijia\Trigger\Listener\RegisterSubsciberListener;
+use Huangdijia\Trigger\Listener\RegisterTriggerListener;
+
 class ConfigProvider
 {
     public function __invoke(): array
@@ -29,7 +32,10 @@ class ConfigProvider
                 ],
             ],
             'commands' => [],
-            'listeners' => [],
+            'listeners' => [
+                RegisterTriggerListener::class,
+                RegisterSubsciberListener::class,
+            ],
             'publish' => [
                 [
                     'id' => 'config',

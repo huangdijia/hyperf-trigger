@@ -10,6 +10,7 @@
         "hyperf/di": "^2.0"
     },
     "require-dev": {
+        "hyperf/framework": "^2.0",
         "friendsofphp/php-cs-fixer": "^2.04",
         "swoole/ide-helper": "^4.5",
         "phpstan/phpstan": "^0.12"

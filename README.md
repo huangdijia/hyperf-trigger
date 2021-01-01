@@ -30,7 +30,7 @@ use Huangdijia\Trigger\Trigger\AbstractTrigger;
 use MySQLReplication\Event\DTO\EventDTO;
 
 /**
- * @Trigger(listen="some_table.write", connection="default")
+ * @Trigger(table="some_table" on="write", connection="default")
  */
 class SomeTableListener extends AbstractTrigger
 {

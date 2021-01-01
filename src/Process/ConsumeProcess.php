@@ -10,12 +10,12 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger\Process;
 
-use Huangdijia\Trigger\Annotation\Subscriber;
 use Huangdijia\Trigger\Subscriber\HeartbeatSubscriber;
 use Huangdijia\Trigger\Subscriber\TriggerSubscriber;
+use Huangdijia\Trigger\SubscriberManager;
+use Huangdijia\Trigger\SubscriberManagerFactory;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
-use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\Process\AbstractProcess;
 use MySQLReplication\BinLog\BinLogCurrent;
@@ -54,11 +54,20 @@ class ConsumeProcess extends AbstractProcess
      */
     protected $logger;
 
+    /**
+     * @var SubscriberManager
+     */
+    protected $subscriberManager;
+
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
 
         $key = 'trigger.' . $this->connection;
+
+        /** @var SubscriberManagerFactory $subscriberManagerFactory */
+        $subscriberManagerFactory = $container->get(SubscriberManagerFactory::class);
+        $this->subscriberManager = $subscriberManagerFactory->create($this->connection);
 
         /** @var ConfigInterface $config */
         $config = $container->get(ConfigInterface::class);
@@ -95,7 +104,7 @@ class ConsumeProcess extends AbstractProcess
 
         $binLogStream = new MySQLReplicationFactory($configBuilder->build());
 
-        $subscribers = $this->getAnnotationSubscribers() + [
+        $subscribers = $this->subscriberManager->get($this->connection) + [
             HeartbeatSubscriber::class,
             TriggerSubscriber::class,
         ];
@@ -137,25 +146,6 @@ class ConsumeProcess extends AbstractProcess
         }
 
         throw new RuntimeException('Can not get the internal IP.');
-    }
-
-    /**
-     * @return array
-     */
-    protected function getAnnotationSubscribers()
-    {
-        $subscribers = [];
-
-        $annotationSubscribers = AnnotationCollector::getClassesByAnnotation(Subscriber::class);
-
-        foreach ($annotationSubscribers as $subscriber => $property) {
-            if ($property->connection != $this->connection) {
-                continue;
-            }
-            $subscribers[] = $subscriber;
-        }
-
-        return $subscribers;
     }
 
     /**

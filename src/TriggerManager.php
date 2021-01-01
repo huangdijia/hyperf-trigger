@@ -10,7 +10,7 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
-use Hyperf\Utils\Str;
+use Hyperf\Utils\Arr;
 
 class TriggerManager
 {
@@ -20,37 +20,29 @@ class TriggerManager
     protected $triggers;
 
     /**
-     * @param string|string[] $event
+     * @param string|string[] $events
      * @param string $trigger
      */
-    public function register($event, $trigger)
+    public function register(string $table, $events, $trigger)
     {
-        foreach ((array) $event as $e) {
-            if (! isset($this->triggers[$e])) {
-                $this->triggers[$e] = [];
+        foreach ((array) $events as $event) {
+            if (! isset($this->triggers[$table])) {
+                $this->triggers[$table] = [];
             }
 
-            $this->triggers[$e][] = $trigger;
+            if (! isset($this->triggers[$table][$event])) {
+                $this->triggers[$table][$event] = [];
+            }
+
+            $this->triggers[$table][$event][] = $trigger;
         }
     }
 
     /**
-     * @return array[string[]]
+     * @return string[]
      */
-    public function get(string $eventType)
+    public function get(string $table, string $event)
     {
-        $triggers = [];
-
-        foreach ((array) $this->triggers as $event => $trigger) {
-            if (Str::is($event, $eventType)) {
-                if (! isset($triggers[$event])) {
-                    $triggers[$event] = [];
-                }
-
-                $triggers[$event] = array_merge($triggers[$event], $trigger);
-            }
-        }
-
-        return $triggers;
+        return Arr::get($this->triggers, $table . '.' . $event, []);
     }
 }
