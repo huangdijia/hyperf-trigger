@@ -20,20 +20,16 @@ class SubscriberManager
     /**
      * @param string $subscriber
      */
-    public function register(string $connection, $subscriber)
+    public function register($subscriber)
     {
-        if (! isset($this->subscribers[$connection])) {
-            $this->subscribers[$connection] = [];
-        }
-
-        $this->subscribers[$connection][] = $subscriber;
+        $this->subscribers[] = $subscriber;
     }
 
     /**
      * @return string[]
      */
-    public function get(string $connection)
+    public function get()
     {
-        return $this->subscribers[$connection] ?? [];
+        return $this->subscribers ?: [];
     }
 }

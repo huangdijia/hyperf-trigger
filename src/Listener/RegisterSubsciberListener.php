@@ -16,6 +16,7 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\Utils\ApplicationContext;
+use Psr\Container\ContainerInterface;
 
 class RegisterSubsciberListener implements ListenerInterface
 {
@@ -36,12 +37,14 @@ class RegisterSubsciberListener implements ListenerInterface
     public function process(object $event)
     {
         if (ApplicationContext::hasContainer()) {
+            /** @var ContainerInterface $container */
+            $container = ApplicationContext::getContainer();
             /** @var SubscriberManagerFactory $factory */
-            $factory = ApplicationContext::getContainer()->get(SubscriberManagerFactory::class);
+            $factory = $container->get(SubscriberManagerFactory::class);
             $subscribers = AnnotationCollector::getClassesByAnnotation(Subscriber::class);
 
             foreach ($subscribers as $class => $property) {
-                $factory->create($property->connection ?: 'default')->register($property->connection ?? 'default', $class);
+                $factory->create($property->connection ?: 'default')->register($class);
             }
         }
     }

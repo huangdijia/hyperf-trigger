@@ -21,8 +21,10 @@ class ConfigProvider
 
         return [
             'dependencies' => [
-                TriggerManagerFactory::class => TriggerManagerFactory::class,
+                PositionFactory::class => PositionFactory::class,
+                ReplicationFactory::class => ReplicationFactory::class,
                 SubscriberManagerFactory::class => SubscriberManagerFactory::class,
+                TriggerManagerFactory::class => TriggerManagerFactory::class,
             ],
             'annotations' => [
                 'scan' => [

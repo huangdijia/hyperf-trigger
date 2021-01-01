@@ -14,7 +14,6 @@ use Huangdijia\Trigger\Annotation\Trigger;
 use Huangdijia\Trigger\Constact\TriggerInterface;
 use Huangdijia\Trigger\TriggerManager;
 use Huangdijia\Trigger\TriggerManagerFactory;
-use Hyperf\Contract\ConfigInterface;
 use Hyperf\Utils\Coroutine\Concurrent;
 use MySQLReplication\Definitions\ConstEventsNames;
 use MySQLReplication\Event\DTO\DeleteRowsDTO;
@@ -32,11 +31,6 @@ class TriggerSubscriber extends AbstractSubscriber
     protected $triggerManager;
 
     /**
-     * @var array
-     */
-    protected $config;
-
-    /**
      * @var null|Concurrent
      */
     protected $concurrent;
@@ -46,9 +40,8 @@ class TriggerSubscriber extends AbstractSubscriber
         parent::__construct($container, $connection);
 
         $this->triggerManager = $container->get(TriggerManagerFactory::class)->create($this->connection);
-        $this->config = $container->get(ConfigInterface::class)->get('trigger.' . $this->connection);
 
-        $concurrentLimit = $config['concurrent']['limit'] ?? null;
+        $concurrentLimit = $this->config['concurrent']['limit'] ?? null;
 
         if ($concurrentLimit && is_numeric($concurrentLimit)) {
             $this->concurrent = new Concurrent((int) $concurrentLimit);
