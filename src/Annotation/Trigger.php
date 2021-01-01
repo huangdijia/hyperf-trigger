@@ -21,7 +21,7 @@ class Trigger extends AbstractAnnotation
     /**
      * @var string
      */
-    public $connection = 'default';
+    public $replication = 'default';
 
     /**
      * @var array
@@ -47,8 +47,8 @@ class Trigger extends AbstractAnnotation
             $this->events = (array) $value['on'];
         }
 
-        if (isset($value['connection']) && is_string($value['connection'])) {
-            $this->connection = $value['connection'];
+        if (isset($value['replication']) && is_string($value['replication'])) {
+            $this->replication = $value['replication'];
         }
 
         if (isset($value['table']) && is_string($value['table'])) {

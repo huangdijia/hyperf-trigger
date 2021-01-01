@@ -20,12 +20,12 @@ class TriggerManagerFactory
     /**
      * @return TriggerManager
      */
-    public function create(string $connection = 'default')
+    public function create(string $replication = 'default')
     {
-        if (! isset($this->managers[$connection])) {
-            $this->managers[$connection] = new TriggerManager();
+        if (! isset($this->managers[$replication])) {
+            $this->managers[$replication] = new TriggerManager();
         }
 
-        return $this->managers[$connection];
+        return $this->managers[$replication];
     }
 }

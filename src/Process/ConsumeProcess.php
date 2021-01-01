@@ -21,10 +21,9 @@ use Psr\Container\ContainerInterface;
 class ConsumeProcess extends AbstractProcess
 {
     /**
-     * Connection.
      * @var string
      */
-    protected $connection = 'default';
+    protected $replication = 'default';
 
     /**
      * @var ContainerInterface
@@ -48,22 +47,22 @@ class ConsumeProcess extends AbstractProcess
         $this->subscriberManagerFactory = $container->get(SubscriberManagerFactory::class);
         $this->replicationFactory = $container->get(ReplicationFactory::class);
 
-        $config = $container->get(ConfigInterface::class)->get('trigger.' . $this->connection);
+        $config = $container->get(ConfigInterface::class)->get('trigger.' . $this->replication);
 
-        $this->name = "trigger.{$this->connection}";
+        $this->name = "trigger.{$this->replication}";
         $this->nums = $config['processes'] ?? 1;
     }
 
     public function handle(): void
     {
-        $replication = $this->replicationFactory->create($this->connection);
-        $subscribers = $this->subscriberManagerFactory->create($this->connection)->get() + [
+        $replication = $this->replicationFactory->create($this->replication);
+        $subscribers = $this->subscriberManagerFactory->create($this->replication)->get() + [
             TriggerSubscriber::class,
             HeartbeatSubscriber::class,
         ];
 
         foreach ($subscribers as $class) {
-            $replication->registerSubscriber(new $class($this->container, $this->connection));
+            $replication->registerSubscriber(new $class($this->container, $this->replication));
         }
 
         $replication->run();

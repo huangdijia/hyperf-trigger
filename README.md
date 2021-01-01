@@ -31,13 +31,13 @@ use MySQLReplication\Event\DTO\EventDTO;
 
 /**
  * single
- * @Trigger(table="table" on="write", connection="default")
+ * @Trigger(table="table" on="write", replication="default")
  * or multi events by array
- * @Trigger(table="table" on={"write", "update", "delete"}, connection="default")
+ * @Trigger(table="table" on={"write", "update", "delete"}, replication="default")
  * or multi events by string
- * @Trigger(table="table" on="write,update,delete", connection="default")
+ * @Trigger(table="table" on="write,update,delete", replication="default")
  * or all events
- * @Trigger(table="table" on="*", connection="default")
+ * @Trigger(table="table" on="*", replication="default")
  */
 class SomeTableListener extends AbstractTrigger
 {
@@ -68,7 +68,7 @@ use Huangdijia\Trigger\Subscriber\AbstractEventSubscriber;
 use MySQLReplication\Event\DTO\EventDTO;
 
 /**
- * @Subscriber(connectin="default")
+ * @Subscriber(replication="default")
  */
 class DemoSubscriber extends AbstractEventSubscriber
 {
@@ -97,7 +97,7 @@ class TriggerProcess extends ConsumeProcess
 }
 ```
 
-- Custom connection
+- Custom replication
 
 ```php
 namespace App\Process;
@@ -110,5 +110,5 @@ use Hyperf\Process\Annotation\Process;
  */
 class CustomProcess extends ConsumeProcess
 {
-    protected $connection = 'custom_connection';
+    protected $replication = 'custom_replication';
 }

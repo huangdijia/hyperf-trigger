@@ -13,7 +13,7 @@ namespace Huangdijia\Trigger;
 class SubscriberManager
 {
     /**
-     * @var array
+     * @var string[]
      */
     protected $subscribers;
 

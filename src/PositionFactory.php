@@ -32,12 +32,12 @@ class PositionFactory
     /**
      * @return Position
      */
-    public function create(string $connection = 'default')
+    public function create(string $replication = 'default')
     {
-        if (! isset($this->positions[$connection])) {
-            $this->positions[$connection] = new Position($this->container, $connection);
+        if (! isset($this->positions[$replication])) {
+            $this->positions[$replication] = new Position($this->container, $replication);
         }
 
-        return $this->positions[$connection];
+        return $this->positions[$replication];
     }
 }

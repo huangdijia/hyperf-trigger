@@ -15,7 +15,7 @@ use Hyperf\Utils\Arr;
 class TriggerManager
 {
     /**
-     * @var array
+     * @var string[]
      */
     protected $triggers;
 

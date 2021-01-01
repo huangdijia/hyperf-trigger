@@ -21,12 +21,12 @@ class Subscriber extends AbstractAnnotation
     /**
      * @var string
      */
-    public $connection = 'default';
+    public $replication = 'default';
 
     public function __construct($value = null)
     {
-        if (isset($value['connection']) && is_string($value['connection'])) {
-            $this->connection = $value['connection'];
+        if (isset($value['replication']) && is_string($value['replication'])) {
+            $this->replication = $value['replication'];
         }
     }
 }

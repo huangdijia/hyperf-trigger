@@ -47,10 +47,10 @@ class ReplicationFactory
      * @throws RuntimeException
      * @return Replication
      */
-    public function create(string $connection = 'default')
+    public function create(string $replication = 'default')
     {
-        if (! isset($this->replications[$connection])) {
-            $key = 'trigger.' . $connection;
+        if (! isset($this->replications[$replication])) {
+            $key = 'trigger.' . $replication;
 
             if (! $this->config->has($key)) {
                 throw new RuntimeException('config ' . $key . ' is undefined.');
@@ -58,14 +58,14 @@ class ReplicationFactory
 
             $config = $this->config->get($key);
 
-            if ($binLogCurrent = $this->positionFactory->create($connection)->get()) {
+            if ($binLogCurrent = $this->positionFactory->create($replication)->get()) {
                 $config['binlog_filename'] = $binLogCurrent->getBinFileName();
                 $config['binlog_position'] = $binLogCurrent->getBinLogPosition();
             }
 
-            $this->replications[$connection] = new Replication($config);
+            $this->replications[$replication] = new Replication($config);
         }
 
-        return $this->replications[$connection];
+        return $this->replications[$replication];
     }
 }

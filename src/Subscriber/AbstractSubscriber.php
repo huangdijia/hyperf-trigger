@@ -30,18 +30,18 @@ abstract class AbstractSubscriber extends EventSubscribers
     /**
      * @var string
      */
-    protected $connection;
+    protected $replication;
 
     /**
      * @var StdoutLoggerInterface
      */
     protected $logger;
 
-    public function __construct(ContainerInterface $container, string $connection = 'default')
+    public function __construct(ContainerInterface $container, string $replication = 'default')
     {
         $this->container = $container;
-        $this->connection = $connection;
-        $this->config = $container->get(ConfigInterface::class)->get('trigger.' . $connection) ?? [];
+        $this->replication = $replication;
+        $this->config = $container->get(ConfigInterface::class)->get('trigger.' . $replication) ?? [];
         $this->logger = $container->get(StdoutLoggerInterface::class);
     }
 }

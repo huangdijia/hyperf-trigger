@@ -50,7 +50,7 @@ class RegisterTriggerListener implements ListenerInterface
                     continue;
                 }
 
-                $factory->create($property->connection ?: 'default')->register($property->table, $property->events, $class);
+                $factory->create($property->replication ?: 'default')->register($property->table, $property->events, $class);
             }
         }
     }

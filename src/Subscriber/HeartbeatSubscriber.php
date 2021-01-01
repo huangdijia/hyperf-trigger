@@ -22,11 +22,11 @@ class HeartbeatSubscriber extends AbstractSubscriber
      */
     protected $positionFactory;
 
-    public function __construct(ContainerInterface $container, string $connection = 'default')
+    public function __construct(ContainerInterface $container, string $replication = 'default')
     {
-        parent::__construct($container, $connection);
+        parent::__construct($container, $replication);
 
-        $this->connection = $connection;
+        $this->replication = $replication;
         $this->positionFactory = $container->get(PositionFactory::class);
     }
 
@@ -39,6 +39,6 @@ class HeartbeatSubscriber extends AbstractSubscriber
 
     public function onHeartbeat(HeartbeatDTO $event): void
     {
-        $this->positionFactory->create($this->connection)->set($event->getEventInfo()->getBinLogCurrent());
+        $this->positionFactory->create($this->replication)->set($event->getEventInfo()->getBinLogCurrent());
     }
 }

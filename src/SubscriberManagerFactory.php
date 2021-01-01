@@ -20,12 +20,12 @@ class SubscriberManagerFactory
     /**
      * @return SubscriberManager
      */
-    public function create(string $connection = 'default')
+    public function create(string $replication = 'default')
     {
-        if (! isset($this->managers[$connection])) {
-            $this->managers[$connection] = new SubscriberManager();
+        if (! isset($this->managers[$replication])) {
+            $this->managers[$replication] = new SubscriberManager();
         }
 
-        return $this->managers[$connection];
+        return $this->managers[$replication];
     }
 }

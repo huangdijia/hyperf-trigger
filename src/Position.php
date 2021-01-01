@@ -23,22 +23,22 @@ class Position
     /**
      * @var string
      */
-    protected $connection;
+    protected $replication;
 
     /**
      * @var CacheInterface
      */
     protected $cache;
 
-    public function __construct(ContainerInterface $container, string $connection = '')
+    public function __construct(ContainerInterface $container, string $replication = '')
     {
-        $this->connection = $connection;
+        $this->replication = $replication;
         $this->cache = $container->get(CacheInterface::class);
     }
 
     public function set(BinLogCurrent $binLogCurrent)
     {
-        $this->cache->set(self::CACHE_KEY_PREFIX . $this->connection, $binLogCurrent, self::CACHE_TTL);
+        $this->cache->set(self::CACHE_KEY_PREFIX . $this->replication, $binLogCurrent, self::CACHE_TTL);
     }
 
     /**
@@ -46,6 +46,6 @@ class Position
      */
     public function get()
     {
-        return $this->cache->get(self::CACHE_KEY_PREFIX . $this->connection) ?: null;
+        return $this->cache->get(self::CACHE_KEY_PREFIX . $this->replication) ?: null;
     }
 }
