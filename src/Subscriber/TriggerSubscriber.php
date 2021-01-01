@@ -10,7 +10,6 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger\Subscriber;
 
-use Huangdijia\Trigger\Annotation\Trigger;
 use Huangdijia\Trigger\Constact\TriggerInterface;
 use Huangdijia\Trigger\TriggerManager;
 use Huangdijia\Trigger\TriggerManagerFactory;
@@ -39,8 +38,9 @@ class TriggerSubscriber extends AbstractSubscriber
     {
         parent::__construct($container, $replication);
 
-        $this->triggerManager = $container->get(TriggerManagerFactory::class)->create($this->replication);
-
+        /** @var TriggerManagerFactory $factory */
+        $factory = $container->get(TriggerManagerFactory::class);
+        $this->triggerManager = $factory->create($this->replication);
         $concurrentLimit = $this->config['concurrent']['limit'] ?? null;
 
         if ($concurrentLimit && is_numeric($concurrentLimit)) {
