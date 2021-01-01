@@ -36,6 +36,10 @@ class Trigger extends AbstractAnnotation
     public function __construct($value = null)
     {
         if (isset($value['on'])) {
+            if ($value['on'] == '*') {
+                $value['on'] = ['write', 'update', 'delete'];
+            }
+
             if (is_string($value['on']) && stripos($value['on'], ',')) {
                 $value['on'] = explode(',', $value['on']);
             }

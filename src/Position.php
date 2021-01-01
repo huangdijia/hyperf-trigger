@@ -26,18 +26,12 @@ class Position
     protected $connection;
 
     /**
-     * @var ContainerInterface
-     */
-    protected $container;
-
-    /**
      * @var CacheInterface
      */
     protected $cache;
 
     public function __construct(ContainerInterface $container, string $connection = '')
     {
-        $this->container = $container;
         $this->connection = $connection;
         $this->cache = $container->get(CacheInterface::class);
     }

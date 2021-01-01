@@ -30,7 +30,14 @@ use Huangdijia\Trigger\Trigger\AbstractTrigger;
 use MySQLReplication\Event\DTO\EventDTO;
 
 /**
- * @Trigger(table="some_table" on="write", connection="default")
+ * single
+ * @Trigger(table="table" on="write", connection="default")
+ * or multi events by array
+ * @Trigger(table="table" on={"write", "update", "delete"}, connection="default")
+ * or multi events by string
+ * @Trigger(table="table" on="write,update,delete", connection="default")
+ * or all events
+ * @Trigger(table="table" on="*", connection="default")
  */
 class SomeTableListener extends AbstractTrigger
 {
@@ -49,14 +56,6 @@ class SomeTableListener extends AbstractTrigger
         var_dump($old);
     }
 }
-```
-
-- Listen Multi Events
-
-```php
-/**
- * @Trigger(listen={"some_table.write", "some_table.update"}, connection="default")
- */
 ```
 
 ## Costom Subscriber
@@ -82,7 +81,7 @@ class DemoSubscriber extends AbstractEventSubscriber
 
 ## Setup Process
 
-- default
+- Default
 
 ```php
 namespace App\Process;
