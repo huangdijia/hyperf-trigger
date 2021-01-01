@@ -36,7 +36,7 @@ class PositionFactory implements FactoryInterface
     public function get(string $replication = 'default')
     {
         if (! isset($this->positions[$replication])) {
-            $this->positions[$replication] = new Position($this->container, $replication);
+            $this->positions[$replication] = make(Position::class, ['replication' => $replication]);
         }
 
         return $this->positions[$replication];

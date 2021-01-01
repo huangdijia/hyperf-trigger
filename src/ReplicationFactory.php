@@ -64,7 +64,7 @@ class ReplicationFactory implements FactoryInterface
                 $config['binlog_position'] = $binLogCurrent->getBinLogPosition();
             }
 
-            $this->replications[$replication] = new Replication($config);
+            $this->replications[$replication] = make(Replication::class, ['config' => $config]);
         }
 
         return $this->replications[$replication];

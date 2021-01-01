@@ -62,7 +62,7 @@ class ConsumeProcess extends AbstractProcess
         ];
 
         foreach ($subscribers as $class) {
-            $replication->registerSubscriber(new $class($this->container, $this->replication));
+            $replication->registerSubscriber(make($class(['replication' => $this->replication])));
         }
 
         $replication->run();
