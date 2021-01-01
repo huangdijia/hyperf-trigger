@@ -55,8 +55,8 @@ class ConsumeProcess extends AbstractProcess
 
     public function handle(): void
     {
-        $replication = $this->replicationFactory->create($this->replication);
-        $subscribers = $this->subscriberManagerFactory->create($this->replication)->get() + [
+        $replication = $this->replicationFactory->get($this->replication);
+        $subscribers = $this->subscriberManagerFactory->get($this->replication)->get() + [
             TriggerSubscriber::class,
             HeartbeatSubscriber::class,
         ];

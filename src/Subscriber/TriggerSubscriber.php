@@ -40,7 +40,7 @@ class TriggerSubscriber extends AbstractSubscriber
 
         /** @var TriggerManagerFactory $factory */
         $factory = $container->get(TriggerManagerFactory::class);
-        $this->triggerManager = $factory->create($this->replication);
+        $this->triggerManager = $factory->get($this->replication);
         $concurrentLimit = $this->config['concurrent']['limit'] ?? null;
 
         if ($concurrentLimit && is_numeric($concurrentLimit)) {

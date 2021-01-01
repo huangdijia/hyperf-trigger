@@ -44,7 +44,7 @@ class RegisterSubsciberListener implements ListenerInterface
             $subscribers = AnnotationCollector::getClassesByAnnotation(Subscriber::class);
 
             foreach ($subscribers as $class => $property) {
-                $factory->create($property->replication ?: 'default')->register($class);
+                $factory->get($property->replication ?: 'default')->register($class);
             }
         }
     }

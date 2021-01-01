@@ -10,7 +10,9 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
-class SubscriberManagerFactory
+use Huangdijia\Trigger\Constact\FactoryInterface;
+
+class SubscriberManagerFactory implements FactoryInterface
 {
     /**
      * @var SubscriberManager[]
@@ -20,7 +22,7 @@ class SubscriberManagerFactory
     /**
      * @return SubscriberManager
      */
-    public function create(string $replication = 'default')
+    public function get(string $replication = 'default')
     {
         if (! isset($this->managers[$replication])) {
             $this->managers[$replication] = new SubscriberManager();

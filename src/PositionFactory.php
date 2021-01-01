@@ -10,9 +10,10 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
+use Huangdijia\Trigger\Constact\FactoryInterface;
 use Psr\Container\ContainerInterface;
 
-class PositionFactory
+class PositionFactory implements FactoryInterface
 {
     /**
      * @var array
@@ -32,7 +33,7 @@ class PositionFactory
     /**
      * @return Position
      */
-    public function create(string $replication = 'default')
+    public function get(string $replication = 'default')
     {
         if (! isset($this->positions[$replication])) {
             $this->positions[$replication] = new Position($this->container, $replication);

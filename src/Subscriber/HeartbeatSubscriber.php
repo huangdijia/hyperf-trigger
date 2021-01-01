@@ -39,6 +39,6 @@ class HeartbeatSubscriber extends AbstractSubscriber
 
     public function onHeartbeat(HeartbeatDTO $event): void
     {
-        $this->positionFactory->create($this->replication)->set($event->getEventInfo()->getBinLogCurrent());
+        $this->positionFactory->get($this->replication)->set($event->getEventInfo()->getBinLogCurrent());
     }
 }

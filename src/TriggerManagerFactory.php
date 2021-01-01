@@ -10,7 +10,9 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
-class TriggerManagerFactory
+use Huangdijia\Trigger\Constact\FactoryInterface;
+
+class TriggerManagerFactory implements FactoryInterface
 {
     /**
      * @var TriggerManager[]
@@ -20,7 +22,7 @@ class TriggerManagerFactory
     /**
      * @return TriggerManager
      */
-    public function create(string $replication = 'default')
+    public function get(string $replication = 'default')
     {
         if (! isset($this->managers[$replication])) {
             $this->managers[$replication] = new TriggerManager();

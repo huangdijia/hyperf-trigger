@@ -10,11 +10,12 @@ declare(strict_types=1);
  */
 namespace Huangdijia\Trigger;
 
+use Huangdijia\Trigger\Constact\FactoryInterface;
 use Hyperf\Contract\ConfigInterface;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 
-class ReplicationFactory
+class ReplicationFactory implements FactoryInterface
 {
     /**
      * @var ContainerInterface
@@ -47,7 +48,7 @@ class ReplicationFactory
      * @throws RuntimeException
      * @return Replication
      */
-    public function create(string $replication = 'default')
+    public function get(string $replication = 'default')
     {
         if (! isset($this->replications[$replication])) {
             $key = 'trigger.' . $replication;
@@ -58,7 +59,7 @@ class ReplicationFactory
 
             $config = $this->config->get($key);
 
-            if ($binLogCurrent = $this->positionFactory->create($replication)->get()) {
+            if ($binLogCurrent = $this->positionFactory->get($replication)->get()) {
                 $config['binlog_filename'] = $binLogCurrent->getBinFileName();
                 $config['binlog_position'] = $binLogCurrent->getBinLogPosition();
             }
