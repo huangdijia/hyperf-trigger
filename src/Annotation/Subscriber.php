@@ -23,10 +23,19 @@ class Subscriber extends AbstractAnnotation
      */
     public $replication = 'default';
 
+    /**
+     * @var int
+     */
+    public $priority = 0;
+
     public function __construct($value = null)
     {
         if (isset($value['replication']) && is_string($value['replication'])) {
             $this->replication = $value['replication'];
+        }
+
+        if (isset($value['priority']) && is_numeric($value['priority'])) {
+            $this->priority = $value['priority'];
         }
     }
 }

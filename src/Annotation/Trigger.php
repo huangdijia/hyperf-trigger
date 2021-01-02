@@ -33,6 +33,11 @@ class Trigger extends AbstractAnnotation
      */
     public $table;
 
+    /**
+     * @var int
+     */
+    public $priority = 0;
+
     public function __construct($value = null)
     {
         if (isset($value['on'])) {
@@ -53,6 +58,10 @@ class Trigger extends AbstractAnnotation
 
         if (isset($value['table']) && is_string($value['table'])) {
             $this->table = $value['table'];
+        }
+
+        if (isset($value['priority']) && is_numeric($value['priority'])) {
+            $this->priority = $value['priority'];
         }
     }
 }

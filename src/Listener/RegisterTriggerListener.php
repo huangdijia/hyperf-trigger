@@ -18,6 +18,7 @@ use Hyperf\Di\Annotation\AnnotationCollector;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\Utils\ApplicationContext;
+use SplPriorityQueue;
 
 class RegisterTriggerListener implements ListenerInterface
 {
@@ -42,8 +43,15 @@ class RegisterTriggerListener implements ListenerInterface
             $factory = ApplicationContext::getContainer()->get(TriggerManagerFactory::class);
             $triggers = AnnotationCollector::getClassesByAnnotation(Trigger::class);
             $logger = ApplicationContext::getContainer()->get(StdoutLoggerInterface::class);
+            $queue = new SplPriorityQueue();
 
             foreach ($triggers as $class => $property) {
+                $queue->insert([$class, $property], $property->priority ?? 0);
+            }
+
+            foreach ($queue as $item) {
+                [$class, $property] = $item;
+
                 if (! in_array(TriggerInterface::class, class_implements($class))) {
                     continue;
                 }

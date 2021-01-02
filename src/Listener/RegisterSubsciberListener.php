@@ -18,6 +18,7 @@ use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Framework\Event\BootApplication;
 use Hyperf\Utils\ApplicationContext;
 use Psr\Container\ContainerInterface;
+use SplPriorityQueue;
 
 class RegisterSubsciberListener implements ListenerInterface
 {
@@ -44,11 +45,17 @@ class RegisterSubsciberListener implements ListenerInterface
             $factory = $container->get(SubscriberManagerFactory::class);
             $subscribers = AnnotationCollector::getClassesByAnnotation(Subscriber::class);
             $logger = ApplicationContext::getContainer()->get(StdoutLoggerInterface::class);
+            $queue = new SplPriorityQueue();
 
             foreach ($subscribers as $class => $property) {
-                $factory->get($property->replication ?: 'default')->register($class);
+                $queue->insert([$class, $property], $property->priority ?? 0);
+            }
 
-                $logger->info(sprintf('[trigger] %s [replication:%s] registered by %s listener.', $class, $property->replication, __CLASS__));
+            foreach ($queue as $item) {
+                [$class, $property] = $item;
+                $replication = $property->replication ?? 'default';
+                $factory->get($replication)->register($class);
+                $logger->info(sprintf('[trigger] %s [replication:%s] registered by %s listener.', $class, $replication, __CLASS__));
             }
         }
     }
