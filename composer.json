@@ -5,6 +5,7 @@
     "require": {
         "hyperf/event": "^2.0",
         "hyperf/process": "^2.0",
+        "hyperf/command": "^2.0",
         "krowinski/php-mysql-replication": "^6.2",
         "hyperf/utils": "^2.0",
         "hyperf/di": "^2.0"
@@ -12,7 +13,7 @@
     "require-dev": {
         "hyperf/framework": "^2.0",
         "friendsofphp/php-cs-fixer": "^2.04",
-        "swoole/ide-helper": "^4.5",
+        "swoole/ide-helper": "dev-master",
         "phpstan/phpstan": "^0.12"
     },
     "autoload": {

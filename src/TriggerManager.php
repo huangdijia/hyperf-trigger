@@ -47,6 +47,14 @@ class TriggerManager
     }
 
     /**
+     * @return string[]
+     */
+    public function all()
+    {
+        return $this->triggers;
+    }
+
+    /**
      * @return string
      */
     protected function buildKey(string $table, string $event)
