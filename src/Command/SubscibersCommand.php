@@ -45,6 +45,18 @@ class SubscibersCommand extends HyperfCommand
     public function handle()
     {
         $subscribers = AnnotationCollector::getClassesByAnnotation(Subscriber::class);
-        var_dump($subscribers);
+        $rows = collect($subscribers)
+            ->filter(function ($property, $class) {
+                if ($this->input->getOption('replication')) {
+                    return $this->input->getOption('replication') == $property->replication;
+                }
+                return true;
+            })
+            ->transform(function ($property, $class) {
+                return [$property->replication, $class, $property->priority];
+            });
+
+        $this->info('Subscibers:');
+        $this->table(['Replication', 'Subsciber', 'Priority'], $rows);
     }
 }

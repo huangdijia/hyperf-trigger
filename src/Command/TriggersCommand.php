@@ -38,13 +38,32 @@ class TriggersCommand extends HyperfCommand
     public function configure()
     {
         parent::configure();
-        $this->addOption('replication', 'R', InputOption::VALUE_OPTIONAL, 'replication');
+        $this->addOption('replication', 'R', InputOption::VALUE_OPTIONAL, 'Replication');
+        $this->addOption('table', 'T', InputOption::VALUE_OPTIONAL, 'Table');
         $this->setDescription('List all triggers.');
     }
 
     public function handle()
     {
         $triggers = AnnotationCollector::getClassesByAnnotation(Trigger::class);
-        var_dump($triggers);
+        $rows = collect($triggers)
+            ->filter(function ($property, $class) {
+                if ($this->input->getOption('replication')) {
+                    return $this->input->getOption('replication') == $property->replication;
+                }
+                return true;
+            })
+            ->filter(function ($property, $class) {
+                if ($this->input->getOption('table')) {
+                    return $this->input->getOption('table') == $property->table;
+                }
+                return true;
+            })
+            ->transform(function ($property, $class) {
+                return [$property->replication, $property->table, implode(',', $property->events), $class, $property->priority];
+            });
+
+        $this->info('Triggers:');
+        $this->table(['Replication', 'Table', 'Events', 'Trigger', 'Priority'], $rows);
     }
 }
