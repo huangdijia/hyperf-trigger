@@ -5,7 +5,7 @@ This file is part of hyperf-trigger.
 
 @link     https://github.com/huangdijia/hyperf-trigger
 @document https://github.com/huangdijia/hyperf-trigger/blob/main/README.md
-@contact  hdj@addcn.com
+@contact  huangdijia@gmail.com
 EOF;
 
 return PhpCsFixer\Config::create()
