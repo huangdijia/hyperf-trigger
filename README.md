@@ -6,6 +6,8 @@
 
 MySQL trigger component for hyperf
 
+⚠️ Move to [friendsofhyperf/trigger](https://github.com/friendsofhyperf/trigger)
+
 ## Installation
 
 - Request
@@ -39,7 +41,7 @@ use MySQLReplication\Event\DTO\EventDTO;
  * or all events
  * @Trigger(table="table" on="*", replication="default")
  */
-class SomeTableListener extends AbstractTrigger
+class SomeTableTrigger extends AbstractTrigger
 {
     public function onWrite(array $new)
     {
